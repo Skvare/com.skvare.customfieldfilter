@@ -8,15 +8,15 @@
   <div class="crm-page-header">
     <h1>{ts}Custom Field Filter Settings{/ts}</h1>
     <p class="description">
-      {ts}Configure which custom groups and fields should be available for filtering on contact summary tabs. Select groups, individual fields, and display options for enhanced search functionality.{/ts}
+      {ts}Configure which custom groups and fields should be available for filtering on custom group tabs. Select specific groups and fields to enable enhanced search functionality.{/ts}
     </p>
   </div>
 
-  {* Summary Tab Display Settings *}
+  {* Tab Settings *}
   <div class="crm-accordion-wrapper">
     <div class="crm-accordion-header">
       <div class="icon crm-accordion-pointer"></div>
-      {ts}Summary Tab Display Settings{/ts}
+      {ts}Tab Filter Settings{/ts}
     </div>
     <div class="crm-accordion-body">
       <table class="form-layout">
@@ -38,7 +38,7 @@
     </div>
     <div class="crm-accordion-body">
       <div class="description" style="margin-bottom: 15px;">
-        {ts}Select which custom groups and their fields should be available for filtering. Configure display options and ordering for each group.{/ts}
+        {ts}Select the custom groups and their fields to make available for filtering. Configure the display order for each group.{/ts}
       </div>
 
       {if $customGroups}
@@ -67,7 +67,7 @@
               </div>
               <div class="content" style="display: inline-block;">
                 {$form.$enable_group_formElement.html}
-                <div class="description">{ts}Enable this entire custom group for filtering on summary tabs.{/ts}</div>
+                <div class="description">{ts}Enable this custom group to allow filtering on the Custom Group tab.{/ts}</div>
               </div>
             </div>
 
@@ -79,7 +79,7 @@
                 </div>
                 <div class="content" style="display: inline-block; width: 400px;">
                   {$form.$fields_group_formElement.html}
-                  <div class="description">{ts}Select specific fields from this group to enable for filtering. Leave empty to enable all fields.{/ts}</div>
+                  <div class="description">{ts}Select the specific fields from this group to enable filtering. You must choose at least one field to use the filter functionality.{/ts}</div>
                 </div>
               </div>
 

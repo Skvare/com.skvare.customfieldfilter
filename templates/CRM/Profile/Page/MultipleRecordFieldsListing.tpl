@@ -12,7 +12,7 @@
 {include file="CRM/common/WizardHeader.tpl"}
 <div class="crm-block crm-content-block crm-profile-multiple-records-listing crm-multivalue-selector-{$customGroupId}">
   {if $customFieldFilters_{$customGroupId} }
-    <details class="crm-accordion-bold crm-search_filters-accordion" open>
+    <details class="crm-accordion-bold crm-search_filters-accordion" {if !$collapsibleFilters}open{/if}>
       <summary>
         {ts}Filter by fields{/ts}
       </summary>
@@ -22,7 +22,7 @@
             {foreach from=$fieldNames_{$customGroupId} item=fieldName}
             <div>
               <div class="crm-contact-form-block-activity_type_filter_id crm-inline-edit-field">
-                {$form.$fieldName.label} {$form.$fieldName.html|crmAddClass:'crm-inline-edit-field'}
+                {$form.$fieldName.label|crmUpper} {$form.$fieldName.html|crmAddClass:'crm-inline-edit-field'}
               </div>
             </div>
             {/foreach}

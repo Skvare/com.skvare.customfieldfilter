@@ -4,6 +4,8 @@
 
 The **Custom Field Filter Extension** (`com.skvare.customfieldfilter`) is a CiviCRM extension developed by Skvare that adds powerful filtering capabilities to multi-value custom groups displayed as tabs in contact summary page. This extension enhances the user experience when working with contacts that have multiple entries in custom field groups by providing intuitive filtering options.
 
+### Note: This extension works only with custom groups that have "Supports Multiple Records" enabled and the display style set to "Tab with table".
+
 ## Description
 
 When working with CiviCRM contacts that have multi-value custom field sets on custom group, users often encounter situations where contacts have numerous entries in custom field groups, making it difficult to quickly locate specific information. This extension solves that problem by adding filtering functionality directly to the same tabs, allowing users to efficiently search and filter through multi-value custom field data.
@@ -16,6 +18,15 @@ When working with CiviCRM contacts that have multi-value custom field sets on cu
 - **Contact Summary Integration**: Seamlessly integrates with existing CiviCRM layout Custom group tab.
 - **Flexible Configuration**: Administrators can configure which custom field groups have filtering enabled
 - **Performance Optimized**: Efficient filtering that doesn't impact page load times
+
+### Setting Form:
+
+![Screenshot](/images/custom_filter_settings.png)
+
+### Custom Group Tab with filter:
+
+![Screenshot](/images/custom_filter_tab.png)
+
 
 ## Requirements
 

@@ -43,6 +43,10 @@ function customfieldfilter_civicrm_pageRun(&$page) {
     if ($contactId && $groupId) {
       $enballedGroups = CRM_Customfieldfilter_Utils::getEnabledGroups();
       if (in_array($groupId, $enballedGroups)) {
+        $settings = Civi::settings()->get('customfieldfilter_settings') ?: [];
+        if ($settings['collapsible_filters']) {
+          $page->assign('collapsibleFilters', TRUE);
+        }
         $enabledFields = CRM_Customfieldfilter_Utils::getEnabledFieldsForGroup($groupId);
         if (!empty($enabledFields)) {
           $page->assign('customFieldFilters_' . $groupId, TRUE);

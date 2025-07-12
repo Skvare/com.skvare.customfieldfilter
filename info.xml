@@ -2,16 +2,16 @@
 <extension key="com.skvare.customfieldfilter" type="module">
   <file>customfieldfilter</file>
   <name>Custom Field Filter</name>
-  <description>Adds filtering capability to multi-value custom fields in contact summary tabs</description>
+  <description>Adds filtering functionality to multi-value custom groups tabs displayed on the contact summary page.</description>
   <license>AGPL-3.0</license>
   <maintainer>
-    <author>FIXME</author>
-    <email>FIXME</email>
+    <author>Sunil Pawar</author>
+    <email>sunil@skvare.com</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">http://FIXME</url>
-    <url desc="Documentation">http://FIXME</url>
-    <url desc="Support">http://FIXME</url>
+    <url desc="Main Extension Page">https://github.com/Skvare/com.skvare.customfieldfilter</url>
+    <url desc="Documentation">https://github.com/Skvare/com.skvare.customfieldfilter</url>
+    <url desc="Support">https://github.com/Skvare/com.skvare.customfieldfilter</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>2025-07-11</releaseDate>
@@ -20,7 +20,7 @@
   <compatibility>
     <ver>5.81</ver>
   </compatibility>
-  <comments>Provides filtering functionality for multi-value custom fields displayed in contact summary page tabs.</comments>
+  <comments>Provides filtering functionality for multi-value custom groups displayed in contact summary page as tab.</comments>
   <classloader>
     <psr0 prefix="CRM_" path="."/>
     <psr4 prefix="Civi\" path="Civi"/>

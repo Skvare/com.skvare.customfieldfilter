@@ -12,14 +12,16 @@ When working with CiviCRM contacts that have multi-value custom field sets on cu
 
 ## Key Features
 
-- **Multi-Value Custom Field Filtering**: Add search and filter capabilities to multi-value custom field displays in custom group tabs
-- **Enhanced User Experience**: Streamline the process of finding specific information within large custom field datasets
-- **Real-time Filtering**: Filter results dynamically as users type or select filter criteria
-- **Contact Summary Integration**: Seamlessly integrates with existing CiviCRM layout Custom group tab.
-- **Flexible Configuration**: Administrators can configure which custom field groups have filtering enabled
-- **Performance Optimized**: Efficient filtering that doesn't impact page load times
+- **Multi-Value Custom Field Filtering**: Add search and filter capabilities to multi-value custom field displays in custom group tabs.
+- **Enhanced User Experience**: Streamline the process of finding specific information within large custom field datasets.
+- **Real-time Filtering**: Filter results dynamically as users type or select filter criteria.
+- **Custom Group Integration**: Seamlessly integrates with existing CiviCRM layout Custom group tab.
+- **Flexible Configuration**: Administrators can configure which custom field groups have filtering enabled.
+- **Performance Optimized**: Efficient filtering that doesn't impact page load times.
 
 ### Setting Form:
+
+(`/civicrm/admin/customfieldfilter`)
 
 ![Screenshot](/images/custom_filter_settings.png)
 
@@ -89,8 +91,11 @@ The extension supports various filter types depending on the custom field type:
 
 - **Text Fields**: Search by partial text matching
 - **Select/Dropdown**: Filter by specific option values
-- **Number Fields**: Filter by numeric ranges
+- **Number Fields**: Filter by Number ranges
 - **Yes/No Fields**: Filter by boolean values
+
+### TODO
+- Add support for Date fields
 
 ## Customization
 

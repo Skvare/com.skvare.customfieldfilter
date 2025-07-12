@@ -14,19 +14,24 @@
   {if $customFieldFilters_{$customGroupId} }
     <details class="crm-accordion-bold crm-search_filters-accordion" {if !$collapsibleFilters}open{/if}>
       <summary>
-        {ts}Filter by fields{/ts}
+        {ts}Filter Results by Fields{/ts}
       </summary>
       <div class="crm-accordion-body">
         <form><!-- form element is here to fool the datepicker widget -->
-          <div class="no-border form-layout-compressed activity-search-options" id="multivalue-filter-{$customGroupId}">
+          <table class="no-border form-layout-compressed custom-search-options" id="multivalue-filter-{$customGroupId}">
+            <tbody>
             {foreach from=$fieldNames_{$customGroupId} item=fieldName}
-            <div>
-              <div class="crm-contact-form-block-activity_type_filter_id crm-inline-edit-field">
-                {$form.$fieldName.label|crmUpper} {$form.$fieldName.html|crmAddClass:'crm-inline-edit-field'}
-              </div>
-            </div>
+              <tr>
+                <td class="label">
+                  {$form.$fieldName.label|crmUpper}
+                </td>
+                <td class="crm-contact-form-block-custom_group_filter_id crm-inline-edit-field">
+                  {$form.$fieldName.html|crmAddClass:'crm-inline-edit-field'}
+                </td>
+              </tr>
             {/foreach}
-          </div>
+            </tbody>
+          </table>
         </form>
       </div>
     </details>

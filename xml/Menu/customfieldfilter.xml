@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/admin/customfieldfilter</path>
+    <title>Custom Field Filter Settings</title>
+    <desc>Configure custom field filtering options for summary tabs</desc>
+    <page_callback>CRM_Customfieldfilter_Form_Settings</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+    <adminGroup>Customize Data and Screens</adminGroup>
+    <icon>fa-filter</icon>
+    <weight>320</weight>
+  </item>
+</menu>

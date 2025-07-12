@@ -1,0 +1,23 @@
+diff --git a/CRM/Core/BAO/CustomValueTable.php b/CRM/Core/BAO/CustomValueTable.php
+index 66e37d3557..112e0f6ac9 100644
+--- a/CRM/Core/BAO/CustomValueTable.php
++++ b/CRM/Core/BAO/CustomValueTable.php
+@@ -464,7 +464,17 @@ AND    $cond
+         }
+       }
+ 
+-      $query = "SELECT SQL_CALC_FOUND_ROWS id, " . implode(', ', $clauses) . " FROM $tableName WHERE entity_id = $entityID {$orderBy} {$limit}";
++      $additionalFilter = '';
++      if (class_exists('\Civi\Core\Event\GenericHookEvent')) {
++        \Civi::dispatcher()->dispatch('hook_civicrm_customValueTableFilter',
++          \Civi\Core\Event\GenericHookEvent::create([
++            'tableName' => $tableName,
++            'params' => $DTparams,
++            'additionalFilter' => &$additionalFilter,
++          ])
++        );
++      }
++      $query = "SELECT SQL_CALC_FOUND_ROWS id, " . implode(', ', $clauses) . " FROM $tableName WHERE entity_id = $entityID {$additionalFilter} {$orderBy} {$limit}";
+       $dao = CRM_Core_DAO::executeQuery($query);
+       if (!empty($DTparams)) {
+         $result['count'] = CRM_Core_DAO::singleValueQuery('SELECT FOUND_ROWS()');

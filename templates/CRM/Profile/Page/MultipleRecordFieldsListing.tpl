@@ -10,68 +10,28 @@
 
 {* Include CiviCRM's default styling and scripts *}
 {include file="CRM/common/WizardHeader.tpl"}
-{assign var=filterFields2 value='filterFields_'|cat:$customGroupId}
 <div class="crm-block crm-content-block crm-profile-multiple-records-listing crm-multivalue-selector-{$customGroupId}">
-  {if $customFieldFilters}
-    {* Enhanced Filter Section for Multi-Value Records *}
-    <div class="custom-field-filters-wrapper">
-      <div class="custom-field-filters" id="multivalue-filter-{$customGroupId}">
-        <div class="filter-header">
-          <h3 class="filter-title">
-            <i class="crm-i fa-filter"></i>
-            Filter {$customGroup_{$customGroupId}.title} Records
-          </h3>
-          <div class="filter-toggle">
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggle-filters-{$customGroupId}">
-              <i class="crm-i fa-chevron-down"></i> Show Filters
-            </button>
-          </div>
-        </div>
-
-        <div class="filter-content" id="filter-content-{$customGroupId}" style="display: none;">
-          <div class="filter-form">
-            <div class="filter-row">
-              <div class="filter-group">
-                <label for="filter-field-{$customGroupId}" class="filter-label">Filter by Field:</label>
-                <select id="filter-field-{$customGroupId}" class="filter-field-select crm-select2 crm-inline-edit-field">
-                  <option value="">-- All Fields --</option>
-                  {foreach from=$filterFields_{$customGroupId} item=field}
-                    <option value="{$field.column_name}" data-field-type="{$field.data_type}">{$field.label}</option>
-                  {/foreach}
-                </select>
-              </div>
-
-              <div class="filter-group">
-                <label for="filter-value-{$customGroupId}" class="filter-label">Filter Value:</label>
-                <input type="text"
-                       id="filter-value-{$customGroupId}"
-                       class="filter-value-input crm-form-text crm-inline-edit-field"
-                       placeholder="Enter value to search for...">
-              </div>
-
-              <div class="filter-actions">
-                <button type="button" class="btn btn-primary apply-filter" data-group-id="{$customGroupId}">
-                  <i class="crm-i fa-search"></i> Apply Filter
-                </button>
-                <button type="button" class="btn btn-secondary clear-filter" data-group-id="{$customGroupId}">
-                  <i class="crm-i fa-times"></i> Clear
-                </button>
+  {if $customFieldFilters_{$customGroupId} }
+    <details class="crm-accordion-bold crm-search_filters-accordion" open>
+      <summary>
+        {ts}Filter by fields{/ts}
+      </summary>
+      <div class="crm-accordion-body">
+        <form><!-- form element is here to fool the datepicker widget -->
+          <div class="no-border form-layout-compressed activity-search-options" id="multivalue-filter-{$customGroupId}">
+            {foreach from=$fieldNames_{$customGroupId} item=fieldName}
+            <div>
+              <div class="crm-contact-form-block-activity_type_filter_id crm-inline-edit-field">
+                {$form.$fieldName.label} {$form.$fieldName.html|crmAddClass:'crm-inline-edit-field'}
               </div>
             </div>
+            {/foreach}
           </div>
-        </div>
+        </form>
       </div>
-    </div>
+    </details>
   {/if}
-
-
-  {* Loading Indicator *}
-  <div class="loading-indicator" id="loading-{$customGroupId}" style="display: none;">
-    <div class="loading-content">
-      <i class="crm-i fa-spinner fa-spin"></i>
-      <span>Filtering records...</span>
-    </div>
-  </div>
+</div>
 
 {if $showListing}
   {if $dontShowTitle neq 1}<h1>{ts}{$customGroupTitle}{/ts}</h1>{/if}
@@ -101,13 +61,78 @@
                 (function($) {
                   var ZeroRecordText = {/literal}"{ts escape='js' 1=$customGroupTitle|smarty:nodefaults}No records of type '%1' found.{/ts}"{literal};
                   var $table = $('#records-' + {/literal}'{$customGroupId}'{literal});
-                  var customGroupId = CRM.vars.customFieldFilter.customGroupId;
+                  var customGroupId = {/literal}{$customGroupId}{literal};
+                  console.log('customGroupId : ' + customGroupId);
                   $('table.crm-multifield-selector').data({
                     "ajax": {
                       "url": {/literal}'{crmURL p="civicrm/ajax/multirecordfieldlist" h=0 q="snippet=4&cid=$contactId&cgid=$customGroupId"}'{literal},
                       "data": function (d) {
-                        d.filter_field = $('.custom-field-filters select#filter-field-'+ customGroupId).val(),
-                        d.filter_value = $('.custom-field-filters #filter-value-'+ customGroupId).val()
+                        {/literal}{if $customFieldFilters_{$customGroupId} }{literal}
+                        var formData = {};
+                        $.each( CRM.vars.customFieldFilter.customFields[customGroupId], function( columnName, fieldName ){
+                          $element = $('#'+fieldName);
+                          var name = $element.attr('name');
+                          var type = $element.attr('type');
+                          var tagName = $element.prop('tagName').toLowerCase();
+                          var value = null;
+                          // Get value based on field type
+                          switch (tagName) {
+                            case 'select':
+                              value = $element.val();
+                              break;
+
+                            case 'textarea':
+                              value = $element.val();
+                              break;
+
+                            case 'input':
+                              switch (type) {
+                                case 'radio':
+                                  if ($element.is(':checked')) {
+                                    value = $element.val();
+                                  }
+                                  break;
+
+                                case 'checkbox':
+                                  if ($element.is(':checked')) {
+                                    value = $element.val();
+                                  }
+                                  break;
+
+                                case 'text':
+                                case 'email':
+                                case 'password':
+                                case 'number':
+                                case 'tel':
+                                case 'url':
+                                case 'date':
+                                case 'hidden':
+                                default:
+                                  value = $element.val();
+                                  break;
+                              }
+                              break;
+                          }
+                          // Store the value if it's not null
+                          if (value !== null) {
+                            if (formData[fieldName]) {
+                              // Handle multiple values for same name (checkboxes, radio groups)
+                              if (!$.isArray(formData[fieldName])) {
+                                formData[fieldName] = [formData[fieldName]];
+                              }
+                              formData[fieldName].push(value);
+                            } else {
+                              formData[fieldName] = value;
+                            }
+                          }
+                        });
+                        $.each( formData, function( key, value ){
+                          if (jQuery.isArray(value)) {
+                            //value = value.join(',');
+                          }
+                         d[key] = value;
+                        });
+                        {/literal}{/if}{literal}
                       }
                     },
                     "language": {
@@ -129,9 +154,11 @@
                       });
                     }
                   });
-                  $('#multivalue-filter-23 :input').change(function(){
+                  {/literal}{if $customFieldFilters_{$customGroupId} }{literal}
+                  $('#multivalue-filter-' + customGroupId +' :input').change(function(){
                     $('table.crm-multifield-selector').DataTable().draw();
                   });
+                  {/literal}{/if}{literal}
                 })(CRM.$);
               </script>
               {/literal}
@@ -185,49 +212,4 @@
     <br />
   {/if}
 {/if}
-
-  {* Initialize JavaScript for this specific multi-value group *}
-  <script type="text/javascript">
-    {literal}
-    setTimeout(function() {
-    (function($) {
-      // Initialize filter functionality when DOM is ready
-      if (typeof window.CustomFieldFilter !== 'undefined' && CRM.vars.customFieldFilter) {
-        var contactId = CRM.vars.customFieldFilter.contactId;
-        var customGroupId = CRM.vars.customFieldFilter.customGroupId;
-        console.log(customGroupId);
-        console.log(contactId);
-        // Initialize the multi-value filter
-        window.CustomFieldFilter.init(customGroupId, contactId, {
-          tableSelector: '#multivalue-table-' + customGroupId,
-          containerSelector: '#multivalue-filter-' + customGroupId,
-          recordsSelector: '#multivalue-table-' + customGroupId + ' tbody',
-          summarySelector: '#results-summary-' + customGroupId,
-          loadingSelector: '#loading-' + customGroupId,
-          pageType: 'MultipleRecordFieldsListing',
-          debounceTime: 500
-        });
-
-        // Filter toggle functionality
-        $('#multivalue-filter-' + customGroupId).on('click', '#toggle-filters-' + customGroupId, function() {
-          var $content = $('#filter-content-' + customGroupId);
-          var $icon = $(this).find('i');
-          console.log($content);
-          if ($content.is(':visible')) {
-            console.log('Hiding filters');
-            $content.slideUp();
-            $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
-            $(this).html('<i class="crm-i fa-chevron-down"></i> Show Filters');
-          } else {
-            console.log('Showing filters');
-            $content.slideDown();
-            $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
-            $(this).html('<i class="crm-i fa-chevron-up"></i> Hide Filters');
-          }
-        });
-      }
-    })(CRM.$);
-    }, 2000);
-    {/literal}
-  </script>
 

@@ -32,197 +32,29 @@ function customfieldfilter_civicrm_enable(): void {
 }
 
 /**
- * Hook to modify custom field display
- */
-function myextension_civicrm_buildForm($formName, &$form) {
-  if ($formName == 'CRM_Contact_Form_View') {
-    // Add filter controls to the form
-    $form->assign('customFieldFilters', TRUE);
-  }
-}
-
-/**
- * Hook to alter template paths for custom field display
- */
-function customfieldfilter_civicrm_alterTemplateFile($formName, &$form, $context, &$tplName) {
-  if (strpos($tplName, 'CRM/Contact/Page/View/CustomDataFieldView.tpl') !== FALSE) {
-    // Use our enhanced template
-    //$tplName = 'CRM/Contact/Page/View/CustomDataFieldView.tpl';
-  }
-}
-
-/**
- * API function to get filtered custom field data
- */
-function civicrm_api3_custom_field_filter2($params) {
-  $contactId = $params['contact_id'];
-  $customGroupId = $params['custom_group_id'];
-  $filterValue = CRM_Utils_Array::value('filter_value', $params, '');
-  $filterField = CRM_Utils_Array::value('filter_field', $params, '');
-
-  // Get custom group info
-  $customGroup = civicrm_api3('CustomGroup', 'getsingle', [
-    'id' => $customGroupId,
-  ]);
-
-  $tableName = $customGroup['table_name'];
-
-  // Build query
-  $sql = "SELECT * FROM {$tableName} WHERE entity_id = %1";
-  $params_sql = [1 => [$contactId, 'Integer']];
-
-  if ($filterValue && $filterField) {
-    $sql .= " AND {$filterField} LIKE %2";
-    $params_sql[2] = ['%' . $filterValue . '%', 'String'];
-  }
-
-  $dao = CRM_Core_DAO::executeQuery($sql, $params_sql);
-
-  $results = [];
-  while ($dao->fetch()) {
-    $row = [];
-    foreach (get_object_vars($dao) as $key => $value) {
-      if (strpos($key, '_') !== 0) { // Skip private properties
-        $row[$key] = $value;
-      }
-    }
-    $results[] = $row;
-  }
-
-  return civicrm_api3_create_success($results);
-}
-
-
-/**
  * Hook implementation to modify contact summary page
  */
 function customfieldfilter_civicrm_pageRun(&$page) {
-  if (get_class($page) == 'CRM_Contact_Page_View_CustomData') {
-    // Add our custom CSS and JS
-
-    CRM_Core_Resources::singleton()->addStyleFile('com.skvare.customfieldfilter', 'css/custom-field-filter.css');
-    CRM_Core_Resources::singleton()->addScriptFile('com.skvare.customfieldfilter', 'js/custom-field-filter.js');
-
+  $pageName = $page->getVar('_name');
+  if ($pageName == 'CRM_Contact_Page_View_CustomData') {
+    $groupId = $page->getVar('_groupId');
     // Add contact ID and group info to the page for JavaScript access
     $contactId = $page->getVar('_contactId');
-    if ($contactId) {
-      $page->assign('customFieldFilters', TRUE);
-      // Get all multi-value custom groups for this contact
-      $customGroups = getMultiValueCustomGroups($contactId);
-      //CRM_Core_Error::debug_var('Custom Groups', $customGroups);
-      // Prepare filter data for each custom group
-      foreach ($customGroups as $groupId => $groupInfo) {
-        $filterData = getCustomFieldTabWithFilter($contactId, $groupId);
-        //CRM_Core_Error::debug_var('$filterData $groupId', $groupId);
-        //CRM_Core_Error::debug_var('$filterData Groups', $filterData);
-        // Assign variables to template for each custom group
-        $page->assign("customGroup_{$groupId}", $filterData['customGroup']);
-        $page->assign("customFields_{$groupId}", $filterData['customFields']);
-        $page->assign("filterFields_{$groupId}", $filterData['filterFields']);
-        $page->assign("contactId_{$groupId}", $filterData['contactId']);
-      }
-      CRM_Core_Resources::singleton()->addVars('customFieldFilter', [
-        'contactId' => $contactId,
-        'customGroupId' => $groupId,
-        'customGroups' => array_keys($customGroups),
-        //'baseUrl' => CRM_Utils_System::url('civicrm/', '', TRUE, NULL, FALSE),
-      ]);
-    }
-  }
-}
-
-/**
- * Hook to modify custom field display templates
- */
-function customfieldfilter_civicrm_buildForm($formName, &$form) {
-  if ($formName == 'CRM_Contact_Form_View') {
-    // Add filter controls to the form
-    $form->assign('customFieldFilters', TRUE);
-  }
-}
-
-/*
-CALL FLOW EXPLANATION:
-======================
-
-1. Contact summary page loads → customfieldfilter_civicrm_pageRun() is triggered
-2. pageRun hook calls getMultiValueCustomGroups() to find all multi-value custom groups
-3. For each group found, getCustomFieldTabWithFilter() is called to prepare template data
-4. Template variables are assigned: customGroup_{$groupId}, customFields_{$groupId}, etc.
-5. Template renders with filter interface using the assigned variables
-6. JavaScript initializes filter functionality for each custom group
-7. User interactions trigger API calls to api/v3/CustomField/Filter.php
-8. Results are displayed in real-time without page refresh
-
-WHY getCustomFieldTabWithFilter() IS NOW CALLED:
-- Called from customfieldfilter_civicrm_pageRun() for each multi-value custom group
-- Prepares the data needed by the Smarty template
-- Ensures template has access to custom field definitions and filter options
-*/
-
-/**
- * Template modification function - NOW PROPERLY CALLED FROM HOOK
- */
-function getCustomFieldTabWithFilter($contactId, $customGroupId) {
-  // Get custom group details
-  $customGroup = civicrm_api3('CustomGroup', 'getsingle', [
-    'id' => $customGroupId,
-  ]);
-
-  // Get custom fields for this group
-  $customFields = civicrm_api3('CustomField', 'get', [
-    'custom_group_id' => $customGroupId,
-    'is_active' => 1,
-  ]);
-
-  $filterFields = [];
-  foreach ($customFields['values'] as $field) {
-    if (in_array($field['html_type'], ['Text', 'Select', 'Multi-Select', 'Radio'])) {
-      $filterFields[] = [
-        'name' => $field['name'],
-        'label' => $field['label'],
-        'column_name' => $field['column_name'],
-      ];
-    }
-  }
-
-  return [
-    'customGroup' => $customGroup,
-    'customFields' => $customFields['values'],
-    'filterFields' => $filterFields,
-    'contactId' => $contactId,
-  ];
-}
-
-/**
- * Helper function to get multi-value custom groups for a contact
- */
-function getMultiValueCustomGroups($contactId) {
-  try {
-    // Get all custom groups that are multi-value and extend contacts
-    $customGroups = civicrm_api3('CustomGroup', 'get', [
-      'is_multiple' => 1,
-      'is_active' => 1,
-      'extends' => 'Contact', // Adjust based on contact type
-    ]);
-
-    $result = [];
-    foreach ($customGroups['values'] as $group) {
-      // Check if this contact has any data in this custom group
-      $tableName = $group['table_name'];
-      $sql = "SELECT COUNT(*) FROM `{$tableName}` WHERE entity_id = %1";
-      $count = CRM_Core_DAO::singleValueQuery($sql, [1 => [$contactId, 'Integer']]);
-
-      if ($count > 0) {
-        $result[$group['id']] = $group;
+    if ($contactId && $groupId) {
+      $enballedGroups = CRM_Customfieldfilter_Utils::getEnabledGroups();
+      if (in_array($groupId, $enballedGroups)) {
+        $enabledFields = CRM_Customfieldfilter_Utils::getEnabledFieldsForGroup($groupId);
+        if (!empty($enabledFields)) {
+          $page->assign('customFieldFilters_' . $groupId, TRUE);
+          $controller = new CRM_Core_Controller_Simple('CRM_Customfieldfilter_Form_Filter',
+            ts('Custom Filter'), NULL
+          );
+          $controller->setEmbedded(TRUE);
+          $controller->set('groupId', $groupId);
+          $controller->run();
+        }
       }
     }
-
-    return $result;
-  }
-  catch (Exception $e) {
-    CRM_Core_Error::debug_log_message('Error getting multi-value custom groups: ' . $e->getMessage());
-    return [];
   }
 }
 
@@ -233,4 +65,70 @@ function getMultiValueCustomGroups($contactId) {
  */
 function customfieldfilter_civicrm_alterMenu(&$items) {
   $items['civicrm/ajax/multirecordfieldlist']['page_callback'] = 'CRM_Customfieldfilter_Utils::getMultiRecordFieldList';
+}
+
+/**
+ * Implements hook_civicrm_tabs().
+ *
+ * Add filter controls to contact summary tabs
+ */
+function customfieldfilter_civicrm_tabset($tabsetName, &$tabs, $context) {
+  if ($tabsetName !== 'civicrm/contact/view') {
+    return;
+  }
+  // Check if any custom field filtering is enabled
+  $config = CRM_Customfieldfilter_Utils::getFilterConfiguration();;
+  if (empty($config)) {
+    return;
+  }
+  foreach ($tabs as $key => &$tab) {
+    // Update the position of custom data tabs if configured
+    if (strpos($tab['id'], 'custom_') === 0) {
+      $groupId = str_replace('custom_', '', $tab['id']);
+      if (in_array($groupId, array_keys($config))) {
+        if (!empty($config[$groupId]['weight'])) {
+          $tab['weight'] = $config[$groupId]['weight'];
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_navigationMenu().
+ *
+ * Add menu item for settings
+ */
+function customfieldfilter_civicrm_navigationMenu(&$menu) {
+  _customfieldfilter_civix_insert_navigation_menu($menu, 'Administer/Customize Data and Screens', [
+    'label' => E::ts('Custom Field Filter Settings'),
+    'name' => 'custom_field_filter_settings',
+    'url' => 'civicrm/admin/customfieldfilter?reset=1',
+    'permission' => 'administer CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+    'icon' => 'crm-i fa-filter',
+  ]);
+  _customfieldfilter_civix_navigationMenu($menu);
+}
+
+function customfieldfilter_civicrm_customValueTableFilter($tableName, $params, &$additionalFilter) {
+  $additionalFilter = ' AND (1) ';
+  $additionalClauses = [];
+  foreach ($params as $fName => $fValue) {
+    if (substr($fName, 0, 14) == 'custom_filter_' && !empty($fValue)) {
+      $columnName = substr($fName, 14);
+      if (is_array($fValue)) {
+        // implode array with IN clause with each value escaped
+        $fValue = "'" . implode("','", $fValue) . "'";
+        $additionalClauses[] = "{$columnName} IN ( $fValue )";
+      }
+      else {
+        $additionalClauses[] = "{$columnName} LIKE '%" . CRM_Utils_Type::escape($fValue, 'String') . "%'";
+      }
+    }
+  }
+  if (!empty($additionalClauses)) {
+    $additionalFilter .= ' AND ' . implode(' AND ', $additionalClauses);
+  }
 }

@@ -83,10 +83,6 @@ cv ext:enable com.skvare.customfieldfilter
   - Configure  field you want to use as filter on each Custom Group
   - Change order/weight to show Custom Group tab near summary tab.
 
-3. **Set Permissions**:
-  - Ensure appropriate user roles have permissions to view and use filtered custom fields
-  - Configure any role-specific filtering restrictions
-
 ### Filter Types
 
 The extension supports various filter types depending on the custom field type:
@@ -97,10 +93,12 @@ The extension supports various filter types depending on the custom field type:
 - **Yes/No Fields**: Filter by boolean values
 
 ## Customization
-### Developer Hooks
 
-The extension provides several hooks for developers to customize functionality:
+* This extension overrides the template file `CRM/Profile/Page/MultipleRecordFieldsListing.tpl`.
+* Please ensure this file is reviewed and updated whenever CiviCRM is upgraded.
+* Additionally, the extension requires patching a core CiviCRM file.
 
+### PATCH
 ```patch
 diff --git a/CRM/Core/BAO/CustomValueTable.php b/CRM/Core/BAO/CustomValueTable.php
 index 66e37d3557..112e0f6ac9 100644

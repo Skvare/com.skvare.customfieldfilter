@@ -63,7 +63,7 @@ class CRM_Customfieldfilter_Utils {
    * @throws CRM_Core_Exception
    */
   public static function getMultiRecordFieldList(): void {
-    //CRM_Core_Page_AJAX::validateAjaxRequestMethod();
+    CRM_Core_Page_AJAX::validateAjaxRequestMethod();
     $cgid = CRM_Utils_Type::escape($_GET['cgid'], 'Integer');
     $optionalParameters = [];
     if (!empty($cgid)) {

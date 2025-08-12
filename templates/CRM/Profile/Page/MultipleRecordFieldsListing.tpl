@@ -67,7 +67,6 @@
                   var ZeroRecordText = {/literal}"{ts escape='js' 1=$customGroupTitle|smarty:nodefaults}No records of type '%1' found.{/ts}"{literal};
                   var $table = $('#records-' + {/literal}'{$customGroupId}'{literal});
                   var customGroupId = {/literal}{$customGroupId}{literal};
-                  console.log('customGroupId : ' + customGroupId);
                   $('table.crm-multifield-selector').data({
                     "ajax": {
                       "url": {/literal}'{crmURL p="civicrm/ajax/multirecordfieldlist" h=0 q="snippet=4&cid=$contactId&cgid=$customGroupId"}'{literal},

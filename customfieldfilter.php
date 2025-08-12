@@ -40,9 +40,11 @@ function customfieldfilter_civicrm_pageRun(&$page) {
     $groupId = $page->getVar('_groupId');
     // Add contact ID and group info to the page for JavaScript access
     $contactId = $page->getVar('_contactId');
+    $page->assign('collapsibleFilters', FALSE);
+    $page->assign('customFieldFilters_' . $groupId, FALSE);
     if ($contactId && $groupId) {
-      $enballedGroups = CRM_Customfieldfilter_Utils::getEnabledGroups();
-      if (in_array($groupId, $enballedGroups)) {
+      $enabledGroups = CRM_Customfieldfilter_Utils::getEnabledGroups();
+      if (in_array($groupId, $enabledGroups)) {
         $settings = Civi::settings()->get('customfieldfilter_settings') ?: [];
         if ($settings['collapsible_filters']) {
           $page->assign('collapsibleFilters', TRUE);
@@ -117,22 +119,24 @@ function customfieldfilter_civicrm_navigationMenu(&$menu) {
 }
 
 function customfieldfilter_civicrm_customValueTableFilter($tableName, $params, &$additionalFilter) {
-  $additionalFilter = ' AND (1) ';
-  $additionalClauses = [];
-  foreach ($params as $fName => $fValue) {
-    if (substr($fName, 0, 14) == 'custom_filter_' && !empty($fValue)) {
-      $columnName = substr($fName, 14);
-      if (is_array($fValue)) {
-        // implode array with IN clause with each value escaped
-        $fValue = "'" . implode("','", $fValue) . "'";
-        $additionalClauses[] = "{$columnName} IN ( $fValue )";
-      }
-      else {
-        $additionalClauses[] = "{$columnName} LIKE '%" . CRM_Utils_Type::escape($fValue, 'String') . "%'";
+  if (!empty($params) && is_array($params)) {
+    $additionalFilter = ' AND (1) ';
+    $additionalClauses = [];
+    foreach ($params as $fName => $fValue) {
+      if (substr($fName, 0, 14) == 'custom_filter_' && !empty($fValue)) {
+        $columnName = substr($fName, 14);
+        if (is_array($fValue)) {
+          // implode array with IN clause with each value escaped
+          $fValue = "'" . implode("','", $fValue) . "'";
+          $additionalClauses[] = "{$columnName} IN ( $fValue )";
+        }
+        else {
+          $additionalClauses[] = "{$columnName} LIKE '%" . CRM_Utils_Type::escape($fValue, 'String') . "%'";
+        }
       }
     }
-  }
-  if (!empty($additionalClauses)) {
-    $additionalFilter .= ' AND ' . implode(' AND ', $additionalClauses);
+    if (!empty($additionalClauses)) {
+      $additionalFilter .= ' AND ' . implode(' AND ', $additionalClauses);
+    }
   }
 }
